@@ -3,17 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment</title>
+    <title>Mockello Payment</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #2d3e50;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #555;
+        }
+        .payment-box {
+            text-align: center;
+            margin-top: 20px;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .payment-form {
+            display: inline-block;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .payment-form script {
+            padding: 10px 30px;
+            background-color: #0a74da;
+            color: white;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .payment-form script:hover {
+            background-color: #0850b3;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
-    <h1>Payment Page</h1>
+    <h1>Mockello Payment</h1>
     <p>{{ message }}</p>
-    <form>
-        <script
-            src="https://checkout.razorpay.com/v1/payment-button.js"
-            data-payment_button_id="pl_Pd9zxrrCIo8BkS"
-            async>
-        </script>
-    </form>
+    <div class="payment-box">
+        <div class="payment-form">
+            <form>
+                <script
+                    src="https://checkout.razorpay.com/v1/payment-button.js"
+                    data-payment_button_id="pl_Pd9zxrrCIo8BkS"
+                    async>
+                </script>
+            </form>
+        </div>
+    </div>
+    <div class="footer">© 2024 Mockello. All Rights Reserved.</div>
 </body>
 </html>

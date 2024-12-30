@@ -4,42 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting Room</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to right, #153a5c, #153a5c);
-            color: white;
-            text-align: center;
-        }
-        .container {
-            margin: 50px auto;
-            padding: 20px;
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        h1 {
-            margin-bottom: 20px;
-            font-size: 2.5em;
-        }
-        p {
-            font-size: 1.2em;
-            margin: 15px 0;
-        }
-        .queue {
-            font-size: 1.5em;
-            color: #ffd700;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Waiting Room</h1>
-        <p>Your position in the queue: <span class="queue">{{ position }}</span></p>
-        <p>Please wait until you're allowed to enter the payment page.</p>
-    </div>
+    <h1>You are in the waiting room</h1>
+    <p>Your current position: <span id="position">{{ position }}</span></p>
+
+    <script>
+        // Connect to the SSE endpoint
+        const eventSource = new EventSource("/status");
+
+        eventSource.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            
+            // Update position
+            document.getElementById("position").textContent = data.position;
+
+            // Redirect to payment page if allowed
+            if (data.is_allowed) {
+                window.location.href = "/";
+            }
+        };
+    </script>
 </body>
 </html>

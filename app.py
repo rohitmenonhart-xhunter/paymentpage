@@ -1,8 +1,10 @@
 import os
-from flask import Flask, render_template, request, jsonify
+import uuid
+from flask import Flask, render_template, request, jsonify, session
 from threading import Lock
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # Required for Flask sessions
 
 # Global variables to track users and waiting list
 current_users = []
@@ -13,7 +15,11 @@ lock = Lock()
 @app.route("/")
 def home():
     global current_users, waiting_list
-    user_id = request.remote_addr  # Use IP as a simple identifier
+    
+    # Assign a unique user ID if not already assigned
+    if "user_id" not in session:
+        session["user_id"] = str(uuid.uuid4())
+    user_id = session["user_id"]
 
     with lock:
         if user_id not in current_users and len(current_users) < max_users:
@@ -40,7 +46,7 @@ def allow_users():
 @app.route("/leave", methods=["POST"])
 def leave():
     global current_users
-    user_id = request.remote_addr  # Use IP as a simple identifier
+    user_id = session.get("user_id")  # Get the user's unique ID
     with lock:
         if user_id in current_users:
             current_users.remove(user_id)

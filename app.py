@@ -18,11 +18,7 @@ def home():
     # Generate unique link URL
     link_url = url_for("payment", user_id=user_id, _external=True)
 
-    return (
-        f"<h1>Welcome to the Payment Service</h1>"
-        f"<p>Your unique payment link (valid for 5 minutes):</p>"
-        f"<a href='{link_url}'>{link_url}</a>"
-    )
+    return render_template("index.html", link_url=link_url)
 
 
 @app.route("/payment/<user_id>")
@@ -40,6 +36,7 @@ def payment(user_id):
         "payment.html",
         message="Your payment link is valid. Please proceed with payment.",
     )
+
 
 
 @app.errorhandler(404)

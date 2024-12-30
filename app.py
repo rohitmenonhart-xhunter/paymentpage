@@ -1,7 +1,8 @@
 import os
 import uuid
-from flask import Flask, render_template, request, jsonify, session, abort
+from flask import Flask, render_template, request, jsonify, session, abort, Response
 from threading import Lock
+import time
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Required for Flask sessions
@@ -35,7 +36,6 @@ def home():
     if user_id in current_users:
         return render_template("payment.html", user_id=user_id)
     else:
-        # Real-time position in the waiting list
         position = waiting_list.index(user_id) + 1
         return render_template("waiting.html", position=position)
 
@@ -78,6 +78,22 @@ def leave():
         "current_users": current_users,
         "waiting_list": waiting_list,
     })
+
+
+@app.route("/status")
+def status():
+    """SSE endpoint to send real-time updates to users."""
+    def generate():
+        user_id = session.get("user_id")
+        while True:
+            with lock:
+                # Check if the user is now in the current_users list
+                is_allowed = user_id in current_users
+                position = waiting_list.index(user_id) + 1 if user_id in waiting_list else -1
+            yield f"data: {{\"is_allowed\": {str(is_allowed).lower()}, \"position\": {position}}}\n\n"
+            time.sleep(1)
+
+    return Response(generate(), content_type="text/event-stream")
 
 
 if __name__ == "__main__":

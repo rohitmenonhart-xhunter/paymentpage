@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, abort
 from threading import Lock
 
 app = Flask(__name__)
@@ -12,10 +12,14 @@ waiting_list = []
 max_users = 2
 lock = Lock()
 
+# Secret key for the `/allow` endpoint
+ALLOWED_SECRET_KEY = "super_secret_key"
+
+
 @app.route("/")
 def home():
     global current_users, waiting_list
-    
+
     # Assign a unique user ID if not already assigned
     if "user_id" not in session:
         session["user_id"] = str(uuid.uuid4())
@@ -31,26 +35,50 @@ def home():
     if user_id in current_users:
         return render_template("payment.html", user_id=user_id)
     else:
-        return render_template("waiting.html", position=waiting_list.index(user_id) + 1)
+        # Real-time position in the waiting list
+        position = waiting_list.index(user_id) + 1
+        return render_template("waiting.html", position=position)
+
 
 @app.route("/allow", methods=["POST"])
 def allow_users():
     global current_users, waiting_list
+
+    # Validate the secret key
+    secret_key = request.headers.get("Authorization")
+    if secret_key != ALLOWED_SECRET_KEY:
+        abort(403, description="Forbidden: Invalid secret key")
+
     with lock:
         if len(waiting_list) > 0:
             to_allow = min(len(waiting_list), max_users - len(current_users))
             current_users.extend(waiting_list[:to_allow])
             waiting_list = waiting_list[to_allow:]
-    return jsonify({"message": "Allowed users moved from waiting list to active users."})
+    return jsonify({
+        "message": "Allowed users moved from waiting list to active users.",
+        "current_users": current_users,
+        "waiting_list": waiting_list,
+    })
+
 
 @app.route("/leave", methods=["POST"])
 def leave():
-    global current_users
+    global current_users, waiting_list
     user_id = session.get("user_id")  # Get the user's unique ID
+
     with lock:
         if user_id in current_users:
             current_users.remove(user_id)
-    return jsonify({"message": "User left successfully."})
+
+        if user_id in waiting_list:
+            waiting_list.remove(user_id)
+
+    return jsonify({
+        "message": "User left successfully.",
+        "current_users": current_users,
+        "waiting_list": waiting_list,
+    })
+
 
 if __name__ == "__main__":
     # Get the port from the environment variable (default to 5000)

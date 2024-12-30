@@ -8,22 +8,20 @@
 <body>
     <h1>You are in the waiting room</h1>
     <p>Your current position: <span id="position">{{ position }}</span></p>
+    <p>You will be allowed to enter the payment page when your turn comes.</p>
 
     <script>
-        // Connect to the SSE endpoint
-        const eventSource = new EventSource("/status");
-
-        eventSource.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            
-            // Update position
-            document.getElementById("position").textContent = data.position;
-
-            // Redirect to payment page if allowed
-            if (data.is_allowed) {
-                window.location.href = "/";
-            }
-        };
+        // Poll the server every 10 seconds to get the updated position
+        setInterval(() => {
+            fetch("/")
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    const position = doc.querySelector("#position").textContent;
+                    document.getElementById("position").textContent = position;
+                });
+        }, 10000);
     </script>
 </body>
 </html>

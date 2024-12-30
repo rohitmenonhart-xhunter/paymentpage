@@ -1,8 +1,8 @@
 import os
 import uuid
-from flask import Flask, render_template, request, jsonify, session, abort, Response
-from threading import Lock
 import time
+from flask import Flask, render_template, session
+from threading import Lock, Thread
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Required for Flask sessions
@@ -13,8 +13,18 @@ waiting_list = []
 max_users = 2
 lock = Lock()
 
-# Secret key for the `/allow` endpoint
-ALLOWED_SECRET_KEY = "super_secret_key"
+
+def manage_waiting_list():
+    """Background thread to manage waiting list and allow users every 10 minutes."""
+    global current_users, waiting_list
+
+    while True:
+        time.sleep(600)  # Wait for 10 minutes
+        with lock:
+            if len(waiting_list) > 0:
+                to_allow = min(len(waiting_list), max_users)
+                current_users.extend(waiting_list[:to_allow])
+                waiting_list = waiting_list[to_allow:]
 
 
 @app.route("/")
@@ -40,27 +50,6 @@ def home():
         return render_template("waiting.html", position=position)
 
 
-@app.route("/allow", methods=["POST"])
-def allow_users():
-    global current_users, waiting_list
-
-    # Validate the secret key
-    secret_key = request.headers.get("Authorization")
-    if secret_key != ALLOWED_SECRET_KEY:
-        abort(403, description="Forbidden: Invalid secret key")
-
-    with lock:
-        if len(waiting_list) > 0:
-            to_allow = min(len(waiting_list), max_users - len(current_users))
-            current_users.extend(waiting_list[:to_allow])
-            waiting_list = waiting_list[to_allow:]
-    return jsonify({
-        "message": "Allowed users moved from waiting list to active users.",
-        "current_users": current_users,
-        "waiting_list": waiting_list,
-    })
-
-
 @app.route("/leave", methods=["POST"])
 def leave():
     global current_users, waiting_list
@@ -73,30 +62,13 @@ def leave():
         if user_id in waiting_list:
             waiting_list.remove(user_id)
 
-    return jsonify({
-        "message": "User left successfully.",
-        "current_users": current_users,
-        "waiting_list": waiting_list,
-    })
-
-
-@app.route("/status")
-def status():
-    """SSE endpoint to send real-time updates to users."""
-    def generate():
-        user_id = session.get("user_id")
-        while True:
-            with lock:
-                # Check if the user is now in the current_users list
-                is_allowed = user_id in current_users
-                position = waiting_list.index(user_id) + 1 if user_id in waiting_list else -1
-            yield f"data: {{\"is_allowed\": {str(is_allowed).lower()}, \"position\": {position}}}\n\n"
-            time.sleep(1)
-
-    return Response(generate(), content_type="text/event-stream")
+    return {"message": "User left successfully."}
 
 
 if __name__ == "__main__":
+    # Start the background thread for automatic user movement
+    Thread(target=manage_waiting_list, daemon=True).start()
+
     # Get the port from the environment variable (default to 5000)
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)

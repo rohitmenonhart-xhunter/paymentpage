@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockello Payments Router</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #2d3e50;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #555;
+        }
+        .link-box {
+            text-align: center;
+            margin-top: 20px;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            background-color: #0a74da;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #0850b3;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mockello Payments Router</h1>
+    <p>Welcome to Mockello's secure payment Router. Your unique payment link is ready.</p>
+    <div class="link-box">
+        <p>Your payment link (valid for 5 minutes):</p>
+        <a href="{{ link_url }}" target="_blank">Proceed to Payment</a>
+    </div>
+    <div class="footer">© 2024 Mockello. All Rights Reserved.</div>
+</body>
+</html>
